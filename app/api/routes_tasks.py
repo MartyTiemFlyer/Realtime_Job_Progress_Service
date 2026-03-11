@@ -4,12 +4,12 @@ from fastapi import APIRouter
 from ..services.task_service import TaskService
 from fastapi import HTTPException
 
-router = APIRouter()
+router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 task_service = TaskService()
 
 
-@router.post("/tasks", status_code=201)
+@router.post("/", status_code=201)
 async def post_task(task_data: dict):
     """Create a new task."""
     try:
@@ -19,7 +19,7 @@ async def post_task(task_data: dict):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/tasks/{task_id}")
+@router.get("/{task_id}")
 async def read_task(task_id: str):
     task = task_service.get_task(task_id)
     if not task:

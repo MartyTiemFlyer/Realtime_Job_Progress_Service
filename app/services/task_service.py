@@ -11,9 +11,9 @@ from ..db.models import Task, TaskStatus
 lock = Lock()  # для потокобезопасной записи в файл
 
 class TaskService:
-    DB_FILE = "free_db.json"
+    DB_FILE = "app/db/free_db.json"
 
-    def save_task(self, task: dict):
+    def save_task(self, task):
         """Сохраняем задачу в (JSON файл) безопасно"""
         with lock:  # блокировка на время чтения/записи
             try:
@@ -23,19 +23,18 @@ class TaskService:
                 data = {}
 
             # Добавляем новую задачу
-            data[task["id"]] = task
+            task_dict = task.__dict__ if hasattr(task, '__dict__') else task
+            data[task_dict["id"]] = task_dict
 
             # Перезаписываем файл
             with open(self.DB_FILE, "w") as f:
                 json.dump(data, f, indent=2, default=str)  # default=str для datetime
 
-
-class TaskService:
     def __init__(self):
         """Инициализация сервиса, подключение к БД"""
         pass    
     
-    def create_task(self):
+    def create_task(self, task_data: dict):
         """Логика создания новой задачи"""
 
         task_id = str(uuid.uuid4())
@@ -43,7 +42,7 @@ class TaskService:
             id=task_id,
             status=TaskStatus.PENDING,
             progress=0,
-            created_at=datetime.utcnow()
+            created_at=datetime.datetime.utcnow()
         )
         
         self.save_task(task)
@@ -67,4 +66,28 @@ class TaskService:
             task = Task(**task_data)
             return task
     
+    def update_task(self, task_id: str, status: TaskStatus | None = None, progress: int | None = None):
+        """Обновление статуса и прогресса задачи"""
+        with lock:
+            try:
+                with open(self.DB_FILE, "r") as f:
+                    data = json.load(f)
+            except FileNotFoundError:
+                return None
+
+            task_data = data.get(task_id)
+            if not task_data:
+                return None
+            
+            if status is not None:
+                task_data["status"] = status
+            if progress is not None:
+                task_data["progress"] = progress
+            
+            # Сохраняем обновленную задачу
+            data[task_id] = task_data
+            with open(self.DB_FILE, "w") as f:
+                json.dump(data, f, indent=2, default=str)
+
+            return Task(**task_data)
     
