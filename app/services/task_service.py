@@ -5,6 +5,8 @@ import datetime
 import json
 from threading import Lock
 import uuid
+
+from app.workers.tasks import process_task
 from ..db.models import Task, TaskStatus
 
 
@@ -12,6 +14,9 @@ lock = Lock()  # для потокобезопасной записи в фай�
 
 class TaskService:
     DB_FILE = "app/db/free_db.json"
+    def __init__(self):
+        """Инициализация сервиса, подключение к БД"""
+        pass 
 
     def save_task(self, task):
         """Сохраняем задачу в (JSON файл) безопасно"""
@@ -30,9 +35,6 @@ class TaskService:
             with open(self.DB_FILE, "w") as f:
                 json.dump(data, f, indent=2, default=str)  # default=str для datetime
 
-    def __init__(self):
-        """Инициализация сервиса, подключение к БД"""
-        pass    
     
     def create_task(self, task_data: dict):
         """Логика создания новой задачи"""
@@ -46,6 +48,7 @@ class TaskService:
         )
         
         self.save_task(task)
+        result = process_task.delay(task_id) # запускаем асинхронную задачу в Celery
 
         return task
     
