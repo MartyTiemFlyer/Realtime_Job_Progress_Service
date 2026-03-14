@@ -1,4 +1,6 @@
 # tasks.py - Асинхронные задачи для Celery
+# Команда запуска:
+# celery -A app.workers.celery_app worker --loglevel=info --pool=solo
 from .celery_app import celery_app
 import redis, json
 
@@ -23,15 +25,15 @@ def publish_event(task_id, status, progress=0, message=""):
 
 @celery_app.task
 def process_task(task_id):
-    """Пример задачи, которая выполняется асинхронно
+    """Пример задачи, которая выполняется асинхронно.
     после каждого шага publish
     """
     publish_event(task_id, status="started", progress=0)
 
     import time
     for i in range(1, 5):
-        time.sleep(1)  # имитация работы
-        progress = i * 3
+        time.sleep(2)  # имитация работы
+        progress = i * 10
         publish_event(task_id, status="progress", progress=progress)
 
     publish_event(task_id, status="finished", progress=100)
