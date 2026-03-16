@@ -1,8 +1,9 @@
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from app.api.routes_tasks import router as tasks_router
+from app.services.websocket_manager import WebSocketManager
 
 app = FastAPI()
-
+manager = WebSocketManager()
 app.include_router(tasks_router)
 # Команда запуска:
 # uvicorn main:app --reload
@@ -11,7 +12,14 @@ app.include_router(tasks_router)
 @app.websocket("/ws/tasks/{task_id}")
 async def task_ws(websocket: WebSocket, task_id: str):
     await websocket.accept()
-
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Task {task_id}: {data}")
+    await manager.connect(task_id, websocket)
+    
+    try: 
+        while True:
+            client_message = await websocket.receive_text()
+    except WebSocketDisconnect as socketDisconnect:
+        print(f"WebSocket disconnected: {socketDisconnect}")
+    finally:
+        manager.disconnect(task_id, websocket)
+           
+        
