@@ -15,6 +15,7 @@ fastapi==0.135.1
 gevent==25.9.1
 greenlet==3.3.2
 h11==0.16.0
+httptools==0.7.1
 idna==3.11
 kombu==5.6.2
 npx==0.1.6
@@ -25,6 +26,8 @@ pycparser==3.0
 pydantic==2.12.5
 pydantic_core==2.41.5
 python-dateutil==2.9.0.post0
+python-dotenv==1.2.2
+PyYAML==6.0.3
 redis==7.3.0
 six==1.17.0
 SQLAlchemy==2.0.48
@@ -35,7 +38,10 @@ tzdata==2025.3
 tzlocal==5.3.1
 uvicorn==0.42.0
 vine==5.1.0
+watchfiles==1.1.1
 wcwidth==0.6.0
+websocat==1.13.0
 websocket==0.2.1
+websockets==16.0
 zope.event==6.1
 zope.interface==8.2
